@@ -1,7 +1,7 @@
 const express = require("express");
 const userRouter = require("./routers/users.router");
 const cookieParser = require("cookie-parser");
-const errorHandingMiddleware = require('./middleware/error-handing-middleware')
+const errorHandingMiddleware = require('./middleware/error-handing-middleware.js')
 
 const app = express();
 const PORT = process.env.PORT || 3000;
