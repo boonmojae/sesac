@@ -20,6 +20,6 @@ POST http://localhost:3000/login
 Content-Type: application/json
 
 {
-    "email": "testt@naver.com",
+    "email": "tomato@naver.com",
     "password": "12345678"
 }

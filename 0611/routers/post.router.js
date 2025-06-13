@@ -7,9 +7,23 @@ const { prisma } = require("../utils/prisma/index.js");
 const bcrypt = require("bcrypt");
 const { signUpValidator, handleValidationResult, loginValidator } = require("../middleware/validation-result-handler.js")
 
-//게시글 조회
+//게시글 조회(누구나 조회가능/작성자 정보도 같이 보냄)
 router.get("/", async (req, res, next) => {
-  const post = await prisma.post.findMany();
+
+  //prisma에서 한번에 조회하는 방법, include=join
+  const post = await prisma.post.findMany({
+    include: {
+      User: {
+        select: {
+          userId: true,
+          nickname: true
+        }
+      }
+    },
+    orderBy: {
+      createdAt : "desc"
+    }
+  });
 
   res.json(post);
 
@@ -20,13 +34,24 @@ router.get("/", async (req, res, next) => {
   }
 });
 
+
 //특정 게시글 조회
-router.get("/:id", async (req, res, next) => {
-  const id = Number(req.params.id);
+router.get("/:postId", async (req, res, next) => {
+  const {postId} = req.params;//여기서 parseInt안하고 where에서 +postId로 숫자형변환
+
+  //User : {이게 없으면 catch에러 뜸
 
   try {
     const post = await prisma.post.findUnique({
-      where: { postId: id }
+      where: { postId: +postId},
+      include : {
+        User : {
+          select : {
+          userId : true,
+          nickname : true
+        }
+        }
+      }
     });
 
     if (!post) {
@@ -35,7 +60,7 @@ router.get("/:id", async (req, res, next) => {
       });
     }
 
-    res.send(post);
+    return res.json({ data: post });
 
   } catch (e) {
     console.error(e);
@@ -47,9 +72,11 @@ router.get("/:id", async (req, res, next) => {
 
 });
 
-//게시글 생성
-router.post("/", async (req, res, next) => {
-  const { title, content, userId } = req.body;
+//게시글 생성_로그인 된 사람만
+router.post("/", authenticateToken, async (req, res, next) => {
+
+  const { title, content } = req.body;
+  const userId = req.user;
 
   try {
 
@@ -121,17 +148,21 @@ router.post("/", async (req, res, next) => {
 
 // });
 
-//-------------------작성자만 수정할 수 있게--------------------
-router.put("/:id", authenticateToken, async (req, res, next) => {
-  const id = Number(req.params.id);
+
+
+
+
+router.put("/:postId", authenticateToken, async (req, res, next) => {
+  //-------------------작성자만 수정할 수 있게--------------------
+  const { postId } = req.params;
   const { title, content } = req.body;
 
-  console.log('게시글 ID:', id);
+  console.log('게시글 ID:', postId);
   console.log('토큰의 사용자 ID:', req.user?.userId);
 
   try {
     const existPost = await prisma.post.findUnique({
-      where: { postId: id }
+      where: { postId : +postId }
     });
 
     console.log('게시글 정보:', existPost);
@@ -150,7 +181,7 @@ router.put("/:id", authenticateToken, async (req, res, next) => {
     }
 
     const post = await prisma.post.update({
-      where: { postId: id },
+      where: { postId : +postId },
       data: {
         title,
         content
@@ -160,7 +191,7 @@ router.put("/:id", authenticateToken, async (req, res, next) => {
     console.log('수정 성공!', post);
     return res.send({
       message: "게시글 수정 완료",
-      post
+      data: post
     });
 
   } catch (e) {
