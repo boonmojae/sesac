@@ -78,20 +78,74 @@ router.post("/", async (req, res, next) => {
 });
 
 //게시글 수정
-router.put("/:id", async (req, res, next) => {
+// router.put("/:id",authenticateToken, async (req, res, next) => {
+//   const id = Number(req.params.id);
+//   const { title, content } = req.body;
+
+//   try {
+
+//     const existPost = await prisma.post.findUnique({
+//       where: { postId: id }
+//     });
+
+//     if (!existPost) {
+//       return res.status(404).send({
+//         message: "게시글이 존재하지 않습니다."
+//       });
+//     }
+
+//     //------authenticateToken---------
+//     if (existPost.userId !== req.user.userId) {
+//       return res.status(403).send({
+//         message: "본인이 작성한 게시글만 수정할 수 있습니다."
+//       });
+//     }
+//     //------authenticateToken---------
+
+//     const post = await prisma.post.update({
+//       where: { postId: id },
+//       data: {
+//         title,
+//         content
+//       }
+//     });
+
+//     res.send(post);
+//   } catch (e) {
+//     console.error(e);
+//     return res.status(500).send({
+//       message: "서버 에러",
+//       error: e.message
+//     })
+//   }
+
+// });
+
+router.put("/:id", authenticateToken, async (req, res, next) => {
   const id = Number(req.params.id);
   const { title, content } = req.body;
 
-  try {
+  console.log('게시글 ID:', id);
+  console.log('토큰의 사용자 ID:', req.user?.userId);
 
+  try {
     const existPost = await prisma.post.findUnique({
       where: { postId: id }
     });
 
+    console.log('게시글 정보:', existPost);
+
     if (!existPost) {
       return res.status(404).send({
         message: "게시글이 존재하지 않습니다."
-      })
+      });
+    }
+
+    if (existPost.userId !== req.user.userId) {
+      console.log('권한 없음: 게시글 작성자:', existPost.userId, '현재 사용자:', req.user.userId);
+      return res.status(403).send({
+        message: "본인이 작성한 게시글만 수정할 수 있습니다."
+      });
     }
 
     const post = await prisma.post.update({
@@ -102,16 +156,27 @@ router.put("/:id", async (req, res, next) => {
       }
     });
 
-    res.send(post);
+    console.log('수정 성공!', post);
+    return res.send({
+      message: "게시글 수정 완료",
+      post
+    });
+
   } catch (e) {
     console.error(e);
     return res.status(500).send({
       message: "서버 에러",
       error: e.message
-    })
+    });
   }
-
 });
+
+
+
+
+
+
+
 
 //게시글 삭제
 router.delete("/:id", async(req, res, next) => {
