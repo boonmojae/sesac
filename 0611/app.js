@@ -1,5 +1,6 @@
 const express = require("express");
 const userRouter = require("./routers/users.router");
+const postRouter = require("./routers/post.router.js")
 const cookieParser = require("cookie-parser");
 const errorHandingMiddleware = require('./middleware/error-handing-middleware.js')
 
@@ -10,6 +11,7 @@ app.use(express.json());
 // app.user(cookieParser());
 
 app.use("/", [userRouter])
+app.use("/posts", postRouter)
 
 // app.use((err, req, res, next)=>{
 
