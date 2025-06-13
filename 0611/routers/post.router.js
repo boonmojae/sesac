@@ -77,7 +77,7 @@ router.post("/", async (req, res, next) => {
   }
 });
 
-//게시글 수정
+//게시글 수정_사용자 상관없이
 // router.put("/:id",authenticateToken, async (req, res, next) => {
 //   const id = Number(req.params.id);
 //   const { title, content } = req.body;
@@ -121,6 +121,7 @@ router.post("/", async (req, res, next) => {
 
 // });
 
+//-------------------작성자만 수정할 수 있게--------------------
 router.put("/:id", authenticateToken, async (req, res, next) => {
   const id = Number(req.params.id);
   const { title, content } = req.body;
@@ -171,11 +172,7 @@ router.put("/:id", authenticateToken, async (req, res, next) => {
   }
 });
 
-
-
-
-
-
+//--------------------------------------
 
 
 //게시글 삭제
