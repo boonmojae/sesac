@@ -16,7 +16,6 @@ module.exports = function(req, res, next) {
 
   const verifiedToken = verifyToken(token);
 
-
   if(!verifiedToken) {
     return next(new Error("Need login"));
   }
