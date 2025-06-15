@@ -1,36 +1,3 @@
-// const jwt = require('jsonwebtoken');
-// const SECRET_KEY = "sesac";
-
-// module.exports = function(req, res, next) {
-//   const authHeader = req.headers['authorization'];
-//   const token = authHeader && authHeader.split(' ')[1];
-
-//   //원래는 try를 사용하는게 맞지만 express에서 error를 처리할수 있게해서 return만 하면됨
-//   //return에서 에러 발생
-
-//   const verifiedToken = verifyToken(token);
-
-//   if(!verifiedToken) {
-//     return next(new Error("TokenNotMatched"));
-//   }
-
-//   req.user = verifiedToken.userId;
-//   next();
-
-// }
-
-// function verifyToken(token) {
-//   try {
-//     return jwt.verify(token, SECRET_KEY);
-//   } catch(e) {
-//     return false;
-//   }
-// }
-//이 코드로 하면 post.router.js에서 수정할때 userId = undefinde로 나옴
-
-
-
-//이 코드를 써야 userId값이 들어옴
 const jwt = require('jsonwebtoken');
 const SECRET_KEY = "sesac";
 
@@ -44,12 +11,10 @@ module.exports = function(req, res, next) {
     return next(new Error("TokenNotMatched"));
   }
   
-  // 이 부분을 수정하세요
   req.user = {
-    userId: verifiedToken.userId  // 객체로 감싸서 할당
+    userId: verifiedToken.userId
   };
-  // 또는 전체 토큰 정보를 할당
-  // req.user = verifiedToken;
+
   
   next();
 }

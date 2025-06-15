@@ -107,11 +107,11 @@ router.post('/login', loginValidator, handleValidationResult, async (req, res, n
 //토큰 검증
 //함수가 있으면 콜백함수보다 먼저 실행된다
 //로그인이 되어있는걸 가정하에 콜백함수 실행
-router.get("/user", authenticateToken, (req, res, next) => {
-  console.log(req.user);
-  next(new Error("password"));
-  res.send("!!")
-});
+// router.get("/user", authenticateToken, (req, res, next) => {
+//   console.log(req.user);
+//   next(new Error("password"));
+//   res.send("!!")
+// });
 
 
 module.exports = router;
