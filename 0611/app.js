@@ -10,8 +10,8 @@ const PORT = process.env.PORT || 3000;
 app.use(express.json());
 // app.user(cookieParser());
 
-app.use("/", [userRouter])
-app.use("/posts", postRouter)
+app.use("/users", [userRouter])
+app.use("/post", postRouter)//postman sesac api하려면 posts=> post
 
 // app.use((err, req, res, next)=>{
 

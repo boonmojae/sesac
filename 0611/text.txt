@@ -1,0 +1,10 @@
+npm init -y
+npm install express
+npm install -D nodemon
+npm install dotenv
+npm install jsonwebtoken
+npm install bcrypt
+npm install express-validator
+npm install prisma @prisma/client
+npx prisma init
+npx prisma db push

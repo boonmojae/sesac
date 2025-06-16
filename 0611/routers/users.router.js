@@ -6,6 +6,7 @@ const authenticateToken = require("../middleware/authenticate-middleware");
 const { prisma } = require("../utils/prisma/index.js");
 const bcrypt = require("bcrypt");
 const { signUpValidator, handleValidationResult, loginValidator } = require("../middleware/validation-result-handler.js")
+const authController = require("../controllers/auth.controller.js")
 
 
 /**
@@ -15,53 +16,57 @@ const { signUpValidator, handleValidationResult, loginValidator } = require("../
  * 4. 데이터 베이스에 저장
  */
 
-
+//분리
+router.post('/sign-up', signUpValidator, handleValidationResult, authController.signUp);
 
 //signUpValidator여기서 에러가 발생하면 handleValidationResult여기서 검증
-router.post("/sign-up", signUpValidator, handleValidationResult, async (req, res, next) => {
+// router.post("/sign-up", signUpValidator, handleValidationResult, async (req, res, next) => {
 
-  //입력 오류가 없는 경우
-  const { email, password, nickname } = req.body;
+//   //입력 오류가 없는 경우
+//   const { email, password, nickname } = req.body;
 
 
-  try {
-    //3. 이메일 중복_prisma 접속
-    const user = await prisma.users.findFirst({
-      where: { email }
-    });
+//   try {
+//     //3. 이메일 중복_prisma 접속
+//     const user = await prisma.users.findFirst({
+//       where: { email }
+//     });
 
-    if (user) {
-      return next(new Error("ExistEmail"));
+//     if (user) {
+//       return next(new Error("ExistEmail"));
 
-    }
-    const saltRounds = 10;
-    const salt = await bcrypt.genSalt(saltRounds);
+//     }
+//     const saltRounds = 10;
+//     const salt = await bcrypt.genSalt(saltRounds);
 
-    //비밀번호를 저장하기 전에 암호화
-    const bcryptPassword = await bcrypt.hash(
-      password,
-      salt
-    );//salt를 써서 hash고정값이 아닌 실행할때마다 바껴서 암호가 더 강화됨
+//     //비밀번호를 저장하기 전에 암호화
+//     const bcryptPassword = await bcrypt.hash(
+//       password,
+//       salt
+//     );//salt를 써서 hash고정값이 아닌 실행할때마다 바껴서 암호가 더 강화됨
 
-    //4. 데이터 베이스에 저장
-    await prisma.users.create({
-      data: {
-        email,
-        password: bcryptPassword,
-        nickname
-      }
-    });
+//     //4. 데이터 베이스에 저장
+//     await prisma.users.create({
+//       data: {
+//         email,
+//         password: bcryptPassword,
+//         nickname
+//       }
+//     });
 
-    return res.json({
-      message: "회원가입 성공"
-    });
-  } catch (e) {
-    console.error(e);
-    return next(new Error("DataBaseError"));
-  }
+//     return res.json({
+//       message: "회원가입 성공"
+//     });
+//   } catch (e) {
+//     console.error(e);
+//     return next(new Error("DataBaseError"));
+//   }
 
-});
+// });
 
+
+//분리
+router.post('/login', loginValidator, handleValidationResult, authController.login);
 
 /**
  * 로그인 API
@@ -72,41 +77,42 @@ router.post("/sign-up", signUpValidator, handleValidationResult, async (req, res
  * 5. JWT 토큰 발급
  * 6. 생성된 데이터를 전달
  */
-router.post('/login', loginValidator, handleValidationResult, async (req, res, next) => {
-  const { email, password } = req.body;
+// router.post('/login', loginValidator, handleValidationResult, async (req, res, next) => {
+//   const { email, password } = req.body;
 
-  const user = await prisma.users.findFirst({
-    where: { email }
-  });
+//   const user = await prisma.users.findFirst({
+//     where: { email }
+//   });
 
-  console.log('user:', user); // 어떤 값이 나오는지 확인
+//   console.log('user:', user); // 어떤 값이 나오는지 확인
 
-  if (!user) {
-    //유저가 없는 경우
-    return next(new Error("UserNotFound"));
-  }
+//   if (!user) {
+//     //유저가 없는 경우
+//     return next(new Error("UserNotFound"));
+//   }
 
-  //사용자가 있음
-  const verifyPassword = await bcrypt.compare(password, user.password);
-  if (!verifyPassword) {
-    return next(new Error("password"));
-  }
+//   //사용자가 있음
+//   const verifyPassword = await bcrypt.compare(password, user.password);
+//   if (!verifyPassword) {
+//     return next(new Error("password"));
+//   }
 
-  const token = jwt.sign({
-    userId: user.userId
-  }, SECRET_KEY, {
-    expiresIn: "12h"
-  });
-  return res.status(200).send({
-    token
-  });
+//   const token = jwt.sign({
+//     userId: user.userId
+//   }, SECRET_KEY, {
+//     expiresIn: "12h"
+//   });
+//   return res.status(200).send({
+//     token
+//   });
 
-});
+// });
 
 
 //토큰 검증
 //함수가 있으면 콜백함수보다 먼저 실행된다
 //로그인이 되어있는걸 가정하에 콜백함수 실행
+//이건 그냥 에러 확인용
 // router.get("/user", authenticateToken, (req, res, next) => {
 //   console.log(req.user);
 //   next(new Error("password"));

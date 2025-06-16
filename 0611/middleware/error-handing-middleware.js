@@ -22,6 +22,9 @@ module.exports = function (err, req, res, next) {
     case "UserNotFound": return res.status(404).send({
       errorMessage: "해당 유저가 없습니다"
     })
+    case "PostNotFound": return res.status(404).send({
+      errorMessage: "해당 게시글이 없습니다"
+    })
     case "Need login":
     case "accessTokenNotMatched":
       return res.status(401).send({

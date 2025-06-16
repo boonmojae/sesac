@@ -5,7 +5,9 @@ const SECRET_KEY = "sesac";
 const authenticateToken = require("../middleware/authenticate-middleware");
 const { prisma } = require("../utils/prisma/index.js");
 const bcrypt = require("bcrypt");
-const { signUpValidator, handleValidationResult, loginValidator } = require("../middleware/validation-result-handler.js")
+const { postValidator, getPostValidator, handleValidationResult } = require("../middleware/validation-result-handler.js")
+const checkPostOwner = require("../middleware/authorization-middleware.js");
+
 
 //게시글 조회(누구나 조회가능/작성자 정보도 같이 보냄)
 router.get("/", async (req, res, next) => {
@@ -36,7 +38,9 @@ router.get("/", async (req, res, next) => {
 
 
 //특정 게시글 조회
-router.get("/:postId", async (req, res, next) => {
+//getPostValidator, handleValidationResult이게 있으면 문자열이거나 공백일때
+//전체 게시글이 보이는게 맞음 >> router가 위에서부터 검사하기때문에
+router.get("/:postId", getPostValidator, handleValidationResult, async (req, res, next) => {
   const {postId} = req.params;//여기서 parseInt안하고 where에서 +postId로 숫자형변환
 
   //User : {이게 없으면 catch에러 뜸
@@ -73,10 +77,10 @@ router.get("/:postId", async (req, res, next) => {
 });
 
 //게시글 생성_로그인 된 사람만
-router.post("/", authenticateToken, async (req, res, next) => {
+router.post("/", authenticateToken, postValidator, handleValidationResult, async (req, res, next) => {
 
   const { title, content } = req.body;
-  const userId = req.user;
+  const userId = +req.user.userId;
 
   try {
 
@@ -84,9 +88,10 @@ router.post("/", authenticateToken, async (req, res, next) => {
       data: {
         title,
         content,
-        User: {
-          connect: { userId: Number(userId) }
-        }
+        userId: userId
+        // User: {
+        //   connect: { userId: Number(userId) }
+        // }
       }
     });
 
@@ -104,82 +109,14 @@ router.post("/", authenticateToken, async (req, res, next) => {
   }
 });
 
-//게시글 수정_사용자 상관없이
-// router.put("/:id",authenticateToken, async (req, res, next) => {
-//   const id = Number(req.params.id);
-//   const { title, content } = req.body;
-
-//   try {
-
-//     const existPost = await prisma.post.findUnique({
-//       where: { postId: id }
-//     });
-
-//     if (!existPost) {
-//       return res.status(404).send({
-//         message: "게시글이 존재하지 않습니다."
-//       });
-//     }
-
-//     //------authenticateToken---------
-//     if (existPost.userId !== req.user.userId) {
-//       return res.status(403).send({
-//         message: "본인이 작성한 게시글만 수정할 수 있습니다."
-//       });
-//     }
-//     //------authenticateToken---------
-
-//     const post = await prisma.post.update({
-//       where: { postId: id },
-//       data: {
-//         title,
-//         content
-//       }
-//     });
-
-//     res.send(post);
-//   } catch (e) {
-//     console.error(e);
-//     return res.status(500).send({
-//       message: "서버 에러",
-//       error: e.message
-//     })
-//   }
-
-// });
 
 
-
-
-
-router.put("/:postId", authenticateToken, async (req, res, next) => {
-  //-------------------작성자만 수정할 수 있게--------------------
+//-------------------작성자만 수정할 수 있게--------------------
+router.put("/:postId", authenticateToken, postValidator, handleValidationResult, checkPostOwner, async (req, res, next) => {
   const { postId } = req.params;
   const { title, content } = req.body;
 
-  console.log('게시글 ID:', postId);
-  console.log('토큰의 사용자 ID:', req.user?.userId);
-
   try {
-    const existPost = await prisma.post.findUnique({
-      where: { postId : +postId }
-    });
-
-    console.log('게시글 정보:', existPost);
-
-    if (!existPost) {
-      return res.status(404).send({
-        message: "게시글이 존재하지 않습니다."
-      });
-    }
-
-    if (existPost.userId !== req.user.userId) {
-      console.log('권한 없음: 게시글 작성자:', existPost.userId, '현재 사용자:', req.user.userId);
-      return res.status(403).send({
-        message: "본인이 작성한 게시글만 수정할 수 있습니다."
-      });
-    }
-
     const post = await prisma.post.update({
       where: { postId : +postId },
       data: {
@@ -205,39 +142,27 @@ router.put("/:postId", authenticateToken, async (req, res, next) => {
 
 //--------------------------------------
 
-
 //게시글 삭제
-router.delete("/:id", async(req, res, next) => {
-  const id = Number(req.params.id);
+router.delete("/:postId", authenticateToken, handleValidationResult, checkPostOwner, async(req, res, next) => {
+  const { postId } = req.params;
 
   try {
-  const existPost = await prisma.post.findUnique({
-    where: { postId: id }
-  });
+    await prisma.post.delete({
+      where: { postId: +postId }
+    });
 
-  if (!existPost) {
-    return res.status(404).send({
-      message: "존재하지 않는 게시글"
-    })
-  }
-
-  await prisma.post.delete({
-    where: { postId: id }
-  });
-
-  return res.send({
-    message: "게시글 삭제 완료"
-  }); 
+    return res.send({
+      message: "게시글 삭제 완료"
+    }); 
 
   } catch(e) {
-  console.error(e);
+    console.error(e);
     return res.status(500).send({
       message: "서버 에러",
       error: e.message
     });
   }
 });
-
 
 
 module.exports = router;
