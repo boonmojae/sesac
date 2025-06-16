@@ -5,7 +5,7 @@ class PostController {
 
 
   //전체 조회
-  findByPosts = async (req, res, next) => {
+async findByPosts(req, res, next) {
     try {
 
       const posts = await postService.findByPosts();
@@ -17,7 +17,7 @@ class PostController {
   }
 
   //특정 조회
-  findByPost = async (req, res, next) => {
+ async findByPost(req, res, next) {
 
     try {
       const postId = +req.params.postId;
@@ -32,7 +32,7 @@ class PostController {
   }
 
   //생성
-  create = async (req, res, next) => {
+ async create(req, res, next) {
     try {
       const { title, content } = req.body;
 
@@ -51,7 +51,8 @@ class PostController {
   }
 
   //수정
-  update = async (req, res, next) => {
+ 
+  async update(req, res, next) {
     try {
       const { title, content } = req.body;
 
@@ -72,7 +73,7 @@ class PostController {
   }
 
   //삭제
-  delete = async (req, res, next) => {
+  async delete(req, res, next) {
     try {
       const postId = +req.params.postId;
       const userId = req.user.userId;
