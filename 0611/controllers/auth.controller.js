@@ -10,7 +10,7 @@ class AuthController {
 
       const newUser = await authService.signUp(email, password, nickname);
 
-      return res.status(201).json({
+      return res.status(200).json({
         message: "회원가입 성공",
         newUser
       });
@@ -47,7 +47,7 @@ class AuthController {
   }
 
   //update
-  
+
   //delete
 
 
