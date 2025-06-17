@@ -11,7 +11,7 @@ module.exports = function(req, res, next) {
     return next(new Error("TokenNotMatched"));
   }
   
-  //req.ures = verifiedToken.userId; 로 하면 router에서 req.user로 가져올 수 있음
+  //req.user = verifiedToken.userId; 로 하면 router에서 req.user로 가져올 수 있음
   //router에서 req.user.userId로 가져옴
   req.user = {
     userId: verifiedToken.userId
