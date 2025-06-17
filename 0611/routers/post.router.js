@@ -120,7 +120,7 @@ router.post("/", authenticateToken, postValidator, handleValidationResult, postC
 
 
 //분리
-router.put("/:postId", authenticateToken, postValidator, handleValidationResult, postController.update)
+router.put("/:postId", authenticateToken, checkPostOwner, postValidator, handleValidationResult, postController.update)
 //게시글 수정_로그인, 작성자만
 // router.put("/:postId", authenticateToken, postValidator, handleValidationResult, checkPostOwner, async (req, res, next) => {
 //   const { postId } = req.params;
@@ -153,7 +153,7 @@ router.put("/:postId", authenticateToken, postValidator, handleValidationResult,
 
 
 //분리
-router.delete("/:postId", authenticateToken, postValidator, handleValidationResult, postController.delete)
+router.delete("/:postId", authenticateToken, checkPostOwner, postValidator, handleValidationResult, postController.delete)
 //게시글 삭제
 // router.delete("/:postId", authenticateToken, handleValidationResult, checkPostOwner, async(req, res, next) => {
 //   const { postId } = req.params;
